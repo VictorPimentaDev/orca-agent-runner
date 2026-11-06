@@ -1,7 +1,7 @@
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {lstat, mkdir, readFile, realpath, writeFile} from 'node:fs/promises';
-import {join, relative, isAbsolute, resolve, dirname, basename} from 'node:path';
+import {join, relative, isAbsolute, resolve, dirname, basename, sep} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {taskId, type Config} from './config.js';
 import {cleanup, LocalTerminalAdapter, type TerminalAdapter, type TerminalHandle} from './terminal.js';
@@ -37,7 +37,7 @@ async function validate(config: Config): Promise<void> {
   await git(config.repo, ['rev-parse', '--verify', 'HEAD']);
   if (await git(config.repo, ['status', '--porcelain', '--untracked-files=all'])) throw new Error('Repository is dirty; commit or stash changes before running');
   const relation = relative(await realpath(config.repo), await canonicalPath(config.stateDir));
-  if (!relation || (!relation.startsWith('..' + '/') && relation !== '..' && !isAbsolute(relation))) {
+  if (!relation || (!relation.startsWith('..' + sep) && relation !== '..' && !isAbsolute(relation))) {
     throw new Error('stateDir must be outside the source repository');
   }
   if (!config.dryRun && !config.command[0]) throw new Error('Execution requires an explicit worker command; use --dry-run to plan');
@@ -78,7 +78,7 @@ export async function gestor(config: Config, adapter: TerminalAdapter = new Loca
   const canonical = await realpath(config.stateDir);
   const source = await realpath(config.repo);
   const rel = relative(source, canonical);
-  if (!rel || (!rel.startsWith('../') && rel !== '..' && !isAbsolute(rel))) throw new Error('stateDir resolves inside the repository');
+  if (!rel || (!rel.startsWith('..' + sep) && rel !== '..' && !isAbsolute(rel))) throw new Error('stateDir resolves inside the repository');
   const owner = randomUUID();
   const runDir = join(canonical, owner);
   await mkdir(runDir, {mode: 0o700});
