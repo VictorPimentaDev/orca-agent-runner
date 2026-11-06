@@ -10,7 +10,7 @@
   "bin": { "oar": "dist/cli.js", "orca-agent-runner": "dist/cli.js" },
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "examples", "README.md", "LICENSE"],
+  "files": ["dist", "examples", "docs", "README.md", "LICENSE"],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
