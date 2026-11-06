@@ -18,4 +18,5 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
-      - run: npm pack --dry-run
+      - run: npm pack
+      - run: npx --yes --package=./orca-agent-runner-0.1.0.tgz oar --help
