@@ -1,8 +1,117 @@
 # orca-agent-runner
 
-**English summary:** A small TypeScript CLI that reads a specification, runs
-explicit worker commands in isolated Git worktrees, validates completion reports
-ending in `FIM`, and cleans up only the terminal sessions it owns.
+![A real local protocol run, using the transparent mock worker](assets/demo.gif)
+
+[![CI](https://github.com/VictorPimentaDev/orca-agent-runner/actions/workflows/ci.yml/badge.svg)](https://github.com/VictorPimentaDev/orca-agent-runner/actions/workflows/ci.yml)
+[![Node.js 22+](https://img.shields.io/badge/node-%3E%3D22-65c9ae)](package.json)
+[![MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Good first issues](https://img.shields.io/github/issues/VictorPimentaDev/orca-agent-runner/good%20first%20issue)](https://github.com/VictorPimentaDev/orca-agent-runner/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
+
+**Give a coding agent a spec, an isolated worktree, and a completion contract.**
+
+A small TypeScript CLI for the plumbing around a coding agent: read a spec, launch
+an explicit worker command, collect a report ending in `FIM`, and close only the
+idle sessions created by that run. Bring your own noninteractive coding agent.
+
+[Quick start](#quick-start) · [Contributing](CONTRIBUTING.md) ·
+[Orca adapter contract](docs/orca-adapter.md) · [Português](#português)
+
+## Quick start
+
+Node.js 22+ and Git. Run directly from GitHub; no global install:
+
+```bash
+npx --yes --package=git+https://github.com/VictorPimentaDev/orca-agent-runner.git oar --help
+```
+
+This installs from this repository, **not an npm registry release**. While the
+repo is private, Git needs an account with read access. The `prepare` script builds
+the CLI during installation. After review and publication the same URL works
+without repository credentials. Never put tokens in command examples or URLs.
+
+From a clean repository with a committed `SPEC.md`:
+
+```bash
+npx --yes --package=git+https://github.com/VictorPimentaDev/orca-agent-runner.git \
+  oar run --repo . --spec SPEC.md --task implement --dry-run
+```
+
+A dry-run checks the spec and repository without creating worktrees or launching
+workers. Remove `--dry-run` and provide your agent command after `--` to execute:
+
+```bash
+oar run --repo ~/projects/acme --spec ~/projects/acme/SPEC.md \
+  --task implement -- node /path/to/your-agent-entrypoint.mjs
+```
+
+Here `oar` is an installed bin (`npm link` from a checkout also works); the full
+`npx --package=… oar` prefix can replace it. Arguments after `--` are passed literally,
+without shell expansion. The repository must have a commit and a clean working tree.
+
+## The completion contract
+
+```text
+SPEC.md → isolated Git worktree → worker command → RESULT.md → owned idle cleanup
+```
+
+The worker receives the spec on stdin plus `OAR_TASK`, `OAR_SPEC_PATH`,
+`OAR_RESULT_PATH` and `OAR_RUN_ID`. It must exit zero and write a nonempty report
+whose last line is exactly `FIM`. Missing, stale, oversized or symlink reports are
+rejected. Reports and logs stay outside the source checkout for review.
+
+```text
+# Result
+
+Implemented input validation. Unit tests pass.
+Not checked: external service integration.
+
+FIM
+```
+
+Tasks run sequentially in independent worktrees from the same HEAD. There is no
+automatic sharing of edits or merging between tasks. `FIM` verifies the completion
+protocol; it does not certify the quality of the work.
+
+## Replay the demo
+
+The GIF above comes from an actual local run with assertions. It uses the clearly
+labeled mock worker: **no coding implementation or LLM call is being claimed**.
+Playback is paced for readability. [Download the asciinema cast](assets/demo.cast),
+or replay it with `asciinema play assets/demo.cast`.
+
+```bash
+npm ci
+npm run demo
+```
+
+The demo creates its own disposable repository, checks a dry-run and a real fixture
+run, verifies the report/manifest/cleanup, then removes only that temporary fixture.
+Git uses your configured identity. Normal runner executions preserve worktrees.
+To regenerate the GIF/cast, install Python Pillow and run `python scripts/render-demo.py`
+after `npm run build`.
+
+## Scope and trust
+
+The included adapter runs local subprocesses, without an interactive PTY. It does
+not control the Orca app. The [adapter interface](docs/orca-adapter.md) is the extension
+point for Orca terminals or another execution environment.
+
+Workers inherit your OS permissions and environment. A worktree is file isolation,
+not a security sandbox. Use trusted commands. There is no timeout, crash recovery,
+distributed scheduler or dependency graph yet. Local cleanup works within the running
+process; a new `oar cleanup` process does not recover or close external sessions.
+
+## Contribute
+
+Start with [CONTRIBUTING.md](CONTRIBUTING.md) and the
+[good first issues](https://github.com/VictorPimentaDev/orca-agent-runner/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22).
+Small changes with a reproducible case are welcome. CI covers real temporary Git
+repositories and controlled worker processes; it does not call an external LLM.
+
+Social preview: [1280×640 card](assets/social-preview.png), ready to upload after
+public review. GitHub does not offer first-time social-preview upload for a new private repo.
+
+## Português
 
 O fluxo é simples: **intake → gestor → worker → result → cleanup**. A especificação
 entra como arquivo, cada tarefa ganha uma worktree e o resultado fica separado do

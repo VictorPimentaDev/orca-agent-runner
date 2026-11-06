@@ -1,0 +1,12 @@
+{"version": 2, "width": 100, "height": 22, "timestamp": 1793999919, "title": "Orca runner: real local fixture, playback paced for readability", "env": {"TERM": "xterm-256color", "SHELL": "/bin/sh"}}
+[0.0, "o", "$ npm run demo\r\n"]
+[0.8, "o", "LOCAL PROTOCOL DEMO / no AI provider or credentials\r\n"]
+[1.6, "o", "1. Created a disposable, clean Git repository.\r\n"]
+[2.4, "o", "2. intake: SPEC.md read and validated.\r\n"]
+[3.2, "o", "3. dry-run: valid plan; zero workers started.\r\n"]
+[4.0, "o", "4. worker: one isolated worktree; local fixture exited 0.\r\n"]
+[4.8, "o", "5. result: nonempty report, final line FIM, copy preserved.\r\n"]
+[5.6, "o", "6. cleanup: 1 owned idle handle closed.\r\n"]
+[6.4, "o", "PASS / worktree + report + manifest checked\r\n"]
+[7.2, "o", "Fixture only. Plug in your own noninteractive coding agent.\r\n"]
+[11.0, "o", "\r\n"]
