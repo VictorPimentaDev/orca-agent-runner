@@ -15,5 +15,5 @@ export async function readResult(path: string): Promise<string> {
 }
 
 export async function result(source: string, destination: string): Promise<void> {
-  await writeFile(destination, await readResult(source), {flag: 'wx'});
+  await writeFile(destination, await readResult(source), {flag: 'wx', mode: 0o600});
 }

@@ -26,7 +26,7 @@ export class LocalTerminalAdapter implements TerminalAdapter {
   async start(request: TerminalRequest): Promise<TerminalHandle> {
     const [executable, ...args] = request.command;
     if (!executable) throw new Error('A worker command is required');
-    const log = await open(request.logPath, 'wx');
+    const log = await open(request.logPath, 'wx', 0o600);
     const handle = Object.freeze({id: randomUUID(), owner: request.owner});
     let session: Session;
     const done = new Promise<number>((resolve, reject) => {

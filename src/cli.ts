@@ -20,7 +20,10 @@ Local sessions are cleaned during run. Worktrees and results are always preserve
 `;
 
 try {
-  if (process.argv.includes('--help')) process.stdout.write(help);
+  const args = process.argv.slice(2);
+  const separator = args.indexOf('--');
+  const runnerArgs = separator < 0 ? args : args.slice(0, separator);
+  if (runnerArgs.includes('--help')) process.stdout.write(help);
   else {
     const {config, action, file} = await configuration(process.argv.slice(2));
     switch (action) {

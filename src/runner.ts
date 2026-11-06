@@ -48,7 +48,7 @@ export async function worker(config: Config, task: string, runDir: string, owner
   taskId(task);
   const directory = join(runDir, task);
   const worktree = join(directory, 'worktree');
-  await mkdir(directory);
+  await mkdir(directory, {mode: 0o700});
   await git(config.repo, ['worktree', 'add', '--detach', worktree, 'HEAD']);
   const source = join(worktree, 'RESULT.md');
   // A tracked previous result must never count as this worker's output.
@@ -73,7 +73,7 @@ export async function gestor(config: Config, adapter: TerminalAdapter = new Loca
   const spec = await intake(config.spec);
   await validate(config);
   if (config.dryRun) return {dryRun: true, workers: [], closed: 0};
-  await mkdir(config.stateDir, {recursive: true});
+  await mkdir(config.stateDir, {recursive: true, mode: 0o700});
   // Canonical check also rejects a stateDir symlink pointing into the source repo.
   const canonical = await realpath(config.stateDir);
   const source = await realpath(config.repo);
@@ -81,22 +81,26 @@ export async function gestor(config: Config, adapter: TerminalAdapter = new Loca
   if (!rel || (!rel.startsWith('../') && rel !== '..' && !isAbsolute(rel))) throw new Error('stateDir resolves inside the repository');
   const owner = randomUUID();
   const runDir = join(canonical, owner);
-  await mkdir(runDir);
-  await writeFile(join(runDir, 'SPEC.md'), spec, {flag: 'wx'});
+  await mkdir(runDir, {mode: 0o700});
+  await writeFile(join(runDir, 'SPEC.md'), spec, {flag: 'wx', mode: 0o600});
   const handles: TerminalHandle[] = [];
   const workers: WorkerResult[] = [];
-  let failure: unknown;
+  let failure: Error | undefined;
+  let cleanupError: string | undefined;
   let closed = 0;
   try {
     for (const task of config.tasks) workers.push(await worker(config, task, runDir, owner, adapter, handles));
-  } catch (error) {failure = error;}
+  } catch (error) {failure = error instanceof Error ? error : new Error(String(error));}
   finally {
     try {closed = await cleanup(adapter, owner, handles);}
-    catch (error) {failure ??= error;}
+    catch (error) {
+      cleanupError = error instanceof Error ? error.message : String(error);
+      failure ??= new Error(`Cleanup failed: ${cleanupError}`);
+    }
   }
   const summary = {dryRun: false, runDir, workers, closed};
   await writeFile(join(runDir, 'run.json'), JSON.stringify({...summary, status: failure ? 'failed' : 'completed',
-    error: failure instanceof Error ? failure.message : failure ? String(failure) : null}, null, 2) + '\n', {flag: 'wx'});
-  if (failure) throw new Error(`Run failed; evidence preserved at ${runDir}: ${failure instanceof Error ? failure.message : String(failure)}`);
+    error: failure?.message ?? null, cleanupError: cleanupError ?? null}, null, 2) + '\n', {flag: 'wx', mode: 0o600});
+  if (failure) throw new Error(`Run failed; evidence preserved at ${runDir}: ${failure.message}${cleanupError ? `; cleanup: ${cleanupError}` : ''}`);
   return summary;
 }
