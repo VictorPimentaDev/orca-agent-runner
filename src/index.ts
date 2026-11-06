@@ -5,3 +5,5 @@ export type {RunResult, WorkerResult} from './runner.js';
 export {parseResult, readResult, result} from './result.js';
 export {LocalTerminalAdapter, cleanup} from './terminal.js';
 export type {TerminalAdapter, TerminalHandle, TerminalRequest} from './terminal.js';
+export {OrcaTerminalAdapter} from './orca-terminal.js';
+export type {OrcaTerminalOptions} from './orca-terminal.js';
