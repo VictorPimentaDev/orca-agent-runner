@@ -1,0 +1,21 @@
+{
+  "name": "orca-agent-runner",
+  "version": "0.1.0",
+  "description": "Spec-to-worktree orchestration for coding agents, with explicit completion and safe terminal cleanup.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Victor Pimenta",
+  "repository": { "type": "git", "url": "https://github.com/VictorPimentaDev/orca-agent-runner.git" },
+  "engines": { "node": ">=22" },
+  "bin": { "oar": "dist/cli.js", "orca-agent-runner": "dist/cli.js" },
+  "exports": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist", "examples", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepack": "npm run build"
+  },
+  "devDependencies": { "@types/node": "^24.0.0", "typescript": "^5.9.0", "vitest": "^4.0.0" }
+}

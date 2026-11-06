@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.env
+.env.*
+!.env.example
+.oar/
+AGENTS.md
+CLAUDE.md
+.codex/
+.claude/
+.DS_Store
